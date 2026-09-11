@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@500;700;800;900&family=IBM+Plex+Mono:wght@400;500&family=Public+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  body{margin:0;background:#F3F7F6;color:#0B1114;font-family:'Public Sans',sans-serif;-webkit-font-smoothing:antialiased;text-wrap:pretty}
+  a{color:#00A6A6;text-decoration:none}
+  *{box-sizing:border-box}
+  .mono{font-family:'IBM Plex Mono',monospace}
+  .rowline{border-bottom:1px solid #D9E4E1}
+</style>
+</helmet>
+<div style="max-width:440px;margin:0 auto;min-height:100vh;background:#F3F7F6">
+
+  <header style="display:flex;align-items:center;justify-content:space-between;padding:16px 18px;border-bottom:1px solid #D9E4E1">
+    <a href="#top" style="display:flex;align-items:center;gap:8px;color:#0B1114">
+      <svg width="22" height="22" viewBox="0 0 32 32"><path d="M4 12V6a2 2 0 0 1 2-2h6" stroke="#0B1114" stroke-width="2.5" fill="none" stroke-linecap="round"/><path d="M28 12V6a2 2 0 0 0-2-2h-6" stroke="#0B1114" stroke-width="2.5" fill="none" stroke-linecap="round"/><path d="M4 20v6a2 2 0 0 0 2 2h6" stroke="#0B1114" stroke-width="2.5" fill="none" stroke-linecap="round"/><path d="M28 20v6a2 2 0 0 1-2 2h-6" stroke="#0B1114" stroke-width="2.5" fill="none" stroke-linecap="round"/><circle cx="19" cy="13" r="3" fill="#00A6A6"/></svg>
+      <span style="font-family:'Manrope',sans-serif;font-weight:800;font-size:16px">ClearImage</span>
+    </a>
+    <button style="background:none;border:none;padding:6px;cursor:pointer;display:flex;flex-direction:column;gap:4px" aria-label="Menu">
+      <span style="width:20px;height:1.5px;background:#0B1114"></span>
+      <span style="width:20px;height:1.5px;background:#0B1114"></span>
+    </button>
+  </header>
+
+  <main id="top" style="padding:0 18px">
+    <div class="mono" style="font-size:11px;color:#657074;letter-spacing:0.06em;margin:28px 0 18px">FREE · NO ACCOUNT REQUIRED</div>
+    <h1 style="font-family:'Manrope',sans-serif;font-weight:900;font-size:clamp(34px,9vw,44px);line-height:1.02;letter-spacing:-0.015em;margin:0 0 18px">Clean the image. Understand the file.</h1>
+    <p style="font-size:16px;line-height:1.6;color:#657074;margin:0 0 26px">Inspect metadata and provenance, detect visible marks, and remove authorized artifacts — in one pass.</p>
+    <a href="ClearImage Upload Mobile.dc.html" style="display:block;text-align:center;background:#00A6A6;color:#fff;font-weight:700;font-size:16px;padding:16px;border-radius:6px;margin-bottom:14px">Upload an Image</a>
+    <a href="#how-it-works" style="display:block;text-align:center;font-weight:700;font-size:14.5px;color:#0B1114;margin-bottom:32px">See how it works</a>
+
+    <div style="position:relative;background:#0B1114;border-radius:10px;padding:22px;min-height:280px;margin-bottom:20px">
+      <div style="position:absolute;top:16px;left:16px;right:16px;bottom:16px;border:1px dashed #22232A;border-radius:6px"></div>
+      <div style="position:relative;height:100%;display:flex;flex-direction:column;justify-content:space-between">
+        <div style="display:flex;justify-content:space-between">
+          <span class="mono" style="font-size:10.5px;color:#657074">image_04.jpg</span>
+          <span class="mono" style="font-size:10.5px;color:#657074">3840 × 2160</span>
+        </div>
+        <div style="align-self:center;position:relative">
+          <div style="width:190px;height:130px;border-radius:6px;background:#11191D;position:relative">
+            <div style="position:absolute;top:16px;left:16px;right:60px;bottom:36px;border:1.5px solid #00A6A6;border-radius:4px"></div>
+            <div style="position:absolute;top:14px;left:16px;background:#00A6A6;color:#fff;font-size:9px;font-weight:700;padding:2px 5px;border-radius:3px;transform:translateY(-100%)">MARK DETECTED</div>
+          </div>
+        </div>
+        <div style="display:flex;justify-content:space-between;gap:10px">
+          <div class="mono" style="font-size:10px;color:#C7C8CC"><span style="color:#657074">METADATA</span><br/>Available</div>
+          <div class="mono" style="font-size:10px;color:#C7C8CC;text-align:right"><span style="color:#657074">MARKS</span><br/>1 found</div>
+        </div>
+      </div>
+    </div>
+
+    <section id="how-it-works" style="padding:36px 0">
+      <h2 style="font-family:'Manrope',sans-serif;font-weight:800;font-size:24px;letter-spacing:-0.01em;margin:0 0 18px">Capabilities</h2>
+      <sc-for list="{{ caps }}" as="c" hint-placeholder-count="6">
+        <div class="rowline" style="padding:18px 0">
+          <div style="display:flex;gap:14px;align-items:baseline;margin-bottom:4px">
+            <span class="mono" style="color:#657074;font-size:12px">{{ c.n }}</span>
+            <div style="font-weight:700;font-size:16px">{{ c.title }}</div>
+          </div>
+          <div style="font-size:13.5px;color:#657074;line-height:1.5;padding-left:26px">{{ c.desc }}</div>
+        </div>
+      </sc-for>
+    </section>
+
+    <section style="background:#0B1114;margin:0 -18px;padding:44px 18px">
+      <div class="mono" style="font-size:11px;color:#3ED9D4;letter-spacing:0.08em;margin-bottom:16px">PROVENANCE INTELLIGENCE</div>
+      <h2 style="font-family:'Manrope',sans-serif;font-weight:900;font-size:26px;color:#fff;letter-spacing:-0.01em;margin:0 0 26px;line-height:1.1">Know what your image carries.</h2>
+      <div style="border:1px solid #22232A;border-radius:8px;overflow:hidden">
+        <sc-for list="{{ signals }}" as="s" hint-placeholder-count="6">
+          <div style="padding:16px;border-bottom:1px solid #22232A;display:flex;justify-content:space-between;align-items:baseline">
+            <span class="mono" style="font-size:11px;color:#657074">{{ s.label }}</span>
+            <span style="font-size:14px;font-weight:700;color:#F0F0F2">{{ s.value }}</span>
+          </div>
+        </sc-for>
+      </div>
+    </section>
+
+    <section id="privacy" style="padding:44px 0">
+      <h2 style="font-family:'Manrope',sans-serif;font-weight:800;font-size:24px;letter-spacing:-0.01em;margin:0 0 20px">Your images are yours.</h2>
+      <div class="rowline" style="padding:16px 0"><div style="font-weight:700;font-size:14.5px;margin-bottom:4px">Secure transfer</div><div style="font-size:13.5px;color:#657074;line-height:1.5">Uploads move over an encrypted connection.</div></div>
+      <div class="rowline" style="padding:16px 0"><div style="font-weight:700;font-size:14.5px;margin-bottom:4px">No unnecessary retention</div><div style="font-size:13.5px;color:#657074;line-height:1.5">Files are held only for the duration of processing, then removed.</div></div>
+      <div style="padding:16px 0"><div style="font-weight:700;font-size:14.5px;margin-bottom:4px">Transparent processing</div><div style="font-size:13.5px;color:#657074;line-height:1.5">Every analysis step is shown to you, not hidden away.</div></div>
+    </section>
+
+    <section style="padding:0 0 44px">
+      <h2 style="font-family:'Manrope',sans-serif;font-weight:800;font-size:24px;letter-spacing:-0.01em;margin:0 0 16px">Frequently asked</h2>
+      <sc-for list="{{ faqs }}" as="faq" hint-placeholder-count="5">
+        <div class="rowline">
+          <button onClick="{{ faq.toggle }}" style="width:100%;text-align:left;padding:16px 0;background:none;border:none;display:flex;justify-content:space-between;align-items:center;gap:12px;cursor:pointer;font-family:inherit" aria-expanded="{{ faq.open }}">
+            <span style="font-weight:700;font-size:14.5px">{{ faq.q }}</span>
+            <span class="mono" style="font-size:15px;color:#657074;flex:none">{{ faq.sign }}</span>
+          </button>
+          <sc-if value="{{ faq.open }}">
+            <div style="padding:0 0 18px;font-size:13.5px;color:#657074;line-height:1.6">{{ faq.a }}</div>
+          </sc-if>
+        </div>
+      </sc-for>
+    </section>
+  </main>
+
+  <section id="about" style="background:#0B1114;padding:56px 18px;text-align:center">
+    <h2 style="font-family:'Manrope',sans-serif;font-weight:900;font-size:26px;color:#fff;margin:0 0 12px;letter-spacing:-0.01em">Inspect your first image.</h2>
+    <p style="color:#8A9497;font-size:14.5px;margin:0 0 24px">Free, no account. Your file is removed once processing finishes.</p>
+    <a href="ClearImage Upload Mobile.dc.html" style="display:block;background:#00A6A6;color:#fff;font-weight:700;font-size:15px;padding:15px;border-radius:6px">Upload an Image</a>
+  </section>
+
+  <footer style="padding:24px 18px">
+    <div style="display:flex;align-items:center;gap:7px;margin-bottom:14px">
+      <svg width="16" height="16" viewBox="0 0 32 32"><path d="M4 12V6a2 2 0 0 1 2-2h6" stroke="#0B1114" stroke-width="2.5" fill="none" stroke-linecap="round"/><path d="M28 12V6a2 2 0 0 0-2-2h-6" stroke="#0B1114" stroke-width="2.5" fill="none" stroke-linecap="round"/><path d="M4 20v6a2 2 0 0 0 2 2h6" stroke="#0B1114" stroke-width="2.5" fill="none" stroke-linecap="round"/><path d="M28 20v6a2 2 0 0 1-2 2h-6" stroke="#0B1114" stroke-width="2.5" fill="none" stroke-linecap="round"/><circle cx="19" cy="13" r="3" fill="#00A6A6"/></svg>
+      <span class="mono" style="font-size:11px;color:#657074">© 2026 ClearImage</span>
+    </div>
+    <div style="display:flex;gap:20px">
+      <a href="#" style="font-size:12.5px;color:#657074;font-weight:600">Privacy</a>
+      <a href="#" style="font-size:12.5px;color:#657074;font-weight:600">Terms</a>
+      <a href="#" style="font-size:12.5px;color:#657074;font-weight:600">About</a>
+    </div>
+  </footer>
+</div>
+
+</x-dc>
+<script type="text/x-dc" data-dc-script>
+
+class Component extends DCLogic {
+  state = { openFaq: 0 };
+  renderVals() {
+    const caps = [
+      { n: '01', title: 'Image Cleanup', desc: 'Remove authorized marks and unwanted artifacts without degrading quality.' },
+      { n: '02', title: 'Metadata Inspection', desc: 'Read EXIF, format, and file details in a clear, readable layout.' },
+      { n: '03', title: 'Provenance Detection', desc: 'Check for Content Credentials and other origin signals.' },
+      { n: '04', title: 'Before / After Comparison', desc: 'A precise slider to compare original and cleaned results.' },
+      { n: '05', title: 'Quality-Preserving Export', desc: 'Download at the original resolution and format.' },
+      { n: '06', title: 'Privacy-Conscious Processing', desc: 'Files are processed temporarily and removed afterward.' },
+    ];
+    const signals = [
+      { label: 'METADATA', value: 'Available' },
+      { label: 'RESOLUTION', value: '3840 × 2160' },
+      { label: 'COLOR PROFILE', value: 'sRGB' },
+      { label: 'CONTENT CREDENTIALS', value: 'Unavailable' },
+      { label: 'EDITING SIGNALS', value: 'None found' },
+      { label: 'FILE CHARACTERISTICS', value: 'Standard' },
+    ];
+    const faqEntries = [
+      { q: 'Is ClearImage really free?', a: 'Yes. Core inspection and cleanup features are free to use, with no account required.' },
+      { q: 'What happens to my uploaded image?', a: 'Your file is processed temporarily to perform analysis and cleanup, then removed.' },
+      { q: 'What file types are supported?', a: 'JPG, JPEG, PNG, and WebP images are currently supported.' },
+      { q: 'What is provenance information?', a: 'Signals — such as Content Credentials or embedded metadata — that can indicate how and where an image was created or edited.' },
+      { q: 'Will cleanup reduce image quality?', a: 'Cleanup is designed to preserve resolution and quality; compare before and after before downloading.' },
+    ];
+    const faqs = faqEntries.map((f, i) => ({
+      ...f, open: this.state.openFaq === i, sign: this.state.openFaq === i ? '−' : '+',
+      toggle: () => this.setState(s => ({ openFaq: s.openFaq === i ? -1 : i })),
+    }));
+    return { caps, signals, faqs };
+  }
+}
+
+</script>
+</body>
+</html>

@@ -1,0 +1,178 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@600;700;800&family=IBM+Plex+Mono:wght@400;500&family=Public+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  body{margin:0;background:#0B1114;color:#F0F0F2;font-family:'Public Sans',sans-serif;-webkit-font-smoothing:antialiased}
+  *{box-sizing:border-box}
+  .mono{font-family:'IBM Plex Mono',monospace}
+  @keyframes spin{to{transform:rotate(360deg)}}
+</style>
+</helmet>
+<div style="min-height:100vh;display:flex;flex-direction:column;background:#0B1114">
+  <header style="background:#0B1114;border-bottom:1px solid #22232A">
+    <div style="max-width:1440px;margin:0 auto;padding:18px 32px;display:flex;align-items:center;justify-content:space-between">
+      <a href="ClearImage Landing.dc.html" style="display:flex;align-items:center;gap:9px;color:#fff;text-decoration:none">
+        <svg width="20" height="20" viewBox="0 0 32 32"><path d="M4 12V6a2 2 0 0 1 2-2h6" stroke="#fff" stroke-width="2.5" fill="none" stroke-linecap="round"/><path d="M28 12V6a2 2 0 0 0-2-2h-6" stroke="#fff" stroke-width="2.5" fill="none" stroke-linecap="round"/><path d="M4 20v6a2 2 0 0 0 2 2h6" stroke="#fff" stroke-width="2.5" fill="none" stroke-linecap="round"/><path d="M28 20v6a2 2 0 0 1-2 2h-6" stroke="#fff" stroke-width="2.5" fill="none" stroke-linecap="round"/><circle cx="19" cy="13" r="3" fill="#00A6A6"/></svg>
+        <span style="font-family:'Manrope',sans-serif;font-weight:700;font-size:15px">ClearImage</span>
+      </a>
+      <div class="mono" style="display:flex;gap:28px;font-size:11.5px;letter-spacing:0.05em">
+        <span style="color:#4F5A5D">01 UPLOAD</span>
+        <span style="color:#4F5A5D">02 INSPECT</span>
+        <span style="color:#fff;border-bottom:1.5px solid #00A6A6;padding-bottom:4px">03 CLEAN</span>
+        <span style="color:#4F5A5D">04 EXPORT</span>
+      </div>
+    </div>
+  </header>
+
+  <main style="flex:1;display:grid;grid-template-columns:260px 1fr;max-width:1440px;margin:0 auto;width:100%">
+    <div style="border-right:1px solid #1E1F26;padding:28px 22px;display:flex;flex-direction:column;gap:28px">
+      <div>
+        <div class="mono" style="font-size:11px;color:#4F5A5D;letter-spacing:0.06em;margin-bottom:14px">CLEANUP</div>
+        <sc-for list="{{ ops }}" as="op" hint-placeholder-count="4">
+          <button onClick="{{ op.select }}" style="{{ op.style }}">{{ op.title }}</button>
+        </sc-for>
+      </div>
+      <div style="border-top:1px solid #1E1F26;padding-top:18px">
+        <button onClick="{{ toggleAdvanced }}" style="background:none;border:none;color:#657074;font-size:12px;font-weight:600;cursor:pointer;padding:0;font-family:inherit;display:flex;align-items:center;gap:6px">
+          Advanced <span class="mono">{{ advancedSign }}</span>
+        </button>
+        <sc-if value="{{ advancedOpen }}">
+          <div style="margin-top:16px;display:flex;flex-direction:column;gap:16px">
+            <div>
+              <div style="display:flex;justify-content:space-between;font-size:12px;color:#657074;margin-bottom:8px"><span>Strength</span><span class="mono">{{ strength }}%</span></div>
+              <input type="range" min="0" max="100" value="{{ strength }}" onChange="{{ onStrength }}" style="width:100%;accent-color:#00A6A6"/>
+            </div>
+            <div>
+              <div style="display:flex;justify-content:space-between;font-size:12px;color:#657074;margin-bottom:8px"><span>Edge preservation</span><span class="mono">{{ edge }}%</span></div>
+              <input type="range" min="0" max="100" value="{{ edge }}" onChange="{{ onEdge }}" style="width:100%;accent-color:#00A6A6"/>
+            </div>
+          </div>
+        </sc-if>
+      </div>
+      <div style="margin-top:auto;display:flex;flex-direction:column;gap:10px">
+        <button onClick="{{ process }}" disabled="{{ processing }}" style="background:#00A6A6;color:#fff;font-weight:700;font-size:14px;padding:12px 18px;border-radius:6px;border:none;cursor:pointer;font-family:inherit;opacity:{{ processBtnOpacity }}">{{ processLabel }}</button>
+        <sc-if value="{{ processed }}">
+          <a href="ClearImage Download.dc.html" style="text-align:center;background:none;border:1px solid #33343B;color:#F0F0F2;font-weight:700;font-size:14px;padding:12px 18px;border-radius:6px;text-decoration:none">Download Result</a>
+        </sc-if>
+      </div>
+    </div>
+
+    <div style="display:flex;flex-direction:column">
+      <div style="display:flex;justify-content:flex-end;gap:6px;padding:16px 24px;border-bottom:1px solid #1E1F26">
+        <button onClick="{{ zoomOut }}" style="width:32px;height:32px;border-radius:6px;border:1px solid #22232A;background:none;color:#C7C8CC;cursor:pointer;font-size:15px">−</button>
+        <button onClick="{{ zoomIn }}" style="width:32px;height:32px;border-radius:6px;border:1px solid #22232A;background:none;color:#C7C8CC;cursor:pointer;font-size:15px">+</button>
+        <button onClick="{{ fitScreen }}" style="height:32px;padding:0 12px;border-radius:6px;border:1px solid #22232A;background:none;color:#C7C8CC;cursor:pointer;font-size:12px" class="mono">FIT</button>
+        <button onClick="{{ resetView }}" style="height:32px;padding:0 12px;border-radius:6px;border:1px solid #22232A;background:none;color:#C7C8CC;cursor:pointer;font-size:12px" class="mono">RESET</button>
+      </div>
+
+      <div ref="{{ stageRef }}" onMouseMove="{{ onMove }}" onMouseUp="{{ endDrag }}" onMouseLeave="{{ endDrag }}" style="position:relative;flex:1;margin:24px;border-radius:8px;overflow:hidden;background:#11191D;user-select:none;min-height:420px">
+        <img src="{{ imgUrl }}" style="position:absolute;inset:0;width:100%;height:100%;object-fit:contain;transform:scale({{ zoom }});display:{{ imgDisplay }}"/>
+        <div style="position:absolute;inset:0;background:#1B1C22;display:{{ placeholderDisplay }};align-items:center;justify-content:center;color:#4F5A5D;font-size:13px" class="mono">NO IMAGE — UPLOAD ONE FIRST</div>
+
+        <sc-if value="{{ processed }}">
+          <div style="position:absolute;inset:0;clip-path:inset(0 {{ clipRight }}% 0 0);background:linear-gradient(135deg,rgba(0,166,166,0.05),rgba(0,166,166,0.02))"></div>
+          <div onMouseDown="{{ startDrag }}" style="position:absolute;top:0;bottom:0;left:{{ sliderPos }}%;width:0;cursor:ew-resize">
+            <div style="position:absolute;top:0;bottom:0;left:-0.5px;width:1px;background:#fff"></div>
+            <div style="position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);width:34px;height:34px;border-radius:50%;background:#fff;display:flex;align-items:center;justify-content:center;font-size:14px;color:#00A6A6;font-weight:700">⟷</div>
+          </div>
+          <div class="mono" style="position:absolute;top:14px;left:14px;font-size:10.5px;color:#657074;background:rgba(16,17,22,0.7);padding:5px 9px;border-radius:4px;letter-spacing:0.05em">ORIGINAL</div>
+          <div class="mono" style="position:absolute;top:14px;right:14px;font-size:10.5px;color:#657074;background:rgba(16,17,22,0.7);padding:5px 9px;border-radius:4px;letter-spacing:0.05em">CLEANED</div>
+        </sc-if>
+
+        <sc-if value="{{ processing }}">
+          <div style="position:absolute;inset:0;background:rgba(11,12,16,0.85);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px">
+            <div style="width:28px;height:28px;border:2.5px solid #22232A;border-top-color:#00A6A6;border-radius:50%;animation:spin 0.8s linear infinite"></div>
+            <div class="mono" style="font-size:12px;color:#C7C8CC">PROCESSING…</div>
+          </div>
+        </sc-if>
+      </div>
+      <div style="padding:0 24px 20px;font-size:12.5px;color:#4F5A5D" class="mono">DRAG THE DIVIDER TO COMPARE</div>
+    </div>
+  </main>
+</div>
+
+</x-dc>
+<script type="text/x-dc" data-dc-script>
+
+class Component extends DCLogic {
+  state = { data: null, selectedOp: 0, processing: false, processed: false, zoom: 1, sliderPos: 50, dragging: false, advancedOpen: false, strength: 70, edge: 60 };
+  stageRef = React.createRef();
+
+  componentDidMount() {
+    try {
+      const raw = sessionStorage.getItem('clearimage_image');
+      if (raw) this.setState({ data: JSON.parse(raw) });
+    } catch (e) {}
+  }
+
+  process = () => {
+    if (this.state.processing) return;
+    this.setState({ processing: true, processed: false });
+    setTimeout(() => this.setState({ processing: false, processed: true, sliderPos: 50 }), 1400);
+  };
+
+  zoomIn = () => this.setState(s => ({ zoom: Math.min(2.5, s.zoom + 0.25) }));
+  zoomOut = () => this.setState(s => ({ zoom: Math.max(0.5, s.zoom - 0.25) }));
+  fitScreen = () => this.setState({ zoom: 1 });
+  resetView = () => this.setState({ zoom: 1, sliderPos: 50 });
+  toggleAdvanced = () => this.setState(s => ({ advancedOpen: !s.advancedOpen }));
+  onStrength = (e) => this.setState({ strength: e.target.value });
+  onEdge = (e) => this.setState({ edge: e.target.value });
+
+  startDrag = (e) => { e.preventDefault(); this.setState({ dragging: true }); };
+  endDrag = () => this.setState({ dragging: false });
+  onMove = (e) => {
+    if (!this.state.dragging || !this.stageRef.current) return;
+    const rect = this.stageRef.current.getBoundingClientRect();
+    const pct = ((e.clientX - rect.left) / rect.width) * 100;
+    this.setState({ sliderPos: Math.max(0, Math.min(100, pct)) });
+  };
+
+  renderVals() {
+    const opNames = ['Remove watermark', 'Remove text overlay', 'Remove logo / stamp', 'Reduce artifacts'];
+    const ops = opNames.map((title, i) => ({
+      title,
+      select: () => this.setState({ selectedOp: i }),
+      style: `text-align:left;width:100%;padding:10px 12px;border-radius:6px;cursor:pointer;font-family:inherit;font-size:13.5px;font-weight:600;border:none;margin-bottom:4px;background:${this.state.selectedOp === i ? '#0F2626' : 'transparent'};color:${this.state.selectedOp === i ? '#6FD6D1' : '#C7C8CC'}`,
+    }));
+    const d = this.state.data;
+    return {
+      ops,
+      advancedOpen: this.state.advancedOpen,
+      advancedSign: this.state.advancedOpen ? '−' : '+',
+      toggleAdvanced: this.toggleAdvanced,
+      strength: this.state.strength, edge: this.state.edge,
+      onStrength: this.onStrength, onEdge: this.onEdge,
+      processing: this.state.processing,
+      processed: this.state.processed,
+      processBtnOpacity: this.state.processing ? 0.6 : 1,
+      processLabel: this.state.processing ? 'Processing…' : (this.state.processed ? 'Re-run Cleanup' : 'Process Image'),
+      process: this.process,
+      zoomIn: this.zoomIn, zoomOut: this.zoomOut, fitScreen: this.fitScreen, resetView: this.resetView,
+      zoom: this.state.zoom,
+      stageRef: this.stageRef,
+      imgUrl: d ? d.dataUrl : '',
+      imgDisplay: d ? 'block' : 'none',
+      placeholderDisplay: d ? 'none' : 'flex',
+      sliderPos: this.state.sliderPos,
+      clipRight: 100 - this.state.sliderPos,
+      startDrag: this.startDrag,
+      endDrag: this.endDrag,
+      onMove: this.onMove,
+    };
+  }
+}
+
+</script>
+</body>
+</html>

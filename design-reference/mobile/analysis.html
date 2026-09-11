@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@600;700;800&family=IBM+Plex+Mono:wght@400;500&family=Public+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  body{margin:0;background:#F3F7F6;color:#0B1114;font-family:'Public Sans',sans-serif;-webkit-font-smoothing:antialiased}
+  *{box-sizing:border-box}
+  .mono{font-family:'IBM Plex Mono',monospace}
+  a{color:#00A6A6;text-decoration:none}
+</style>
+</helmet>
+<div style="max-width:440px;margin:0 auto;min-height:100vh;background:#F3F7F6;display:flex;flex-direction:column">
+  <header style="background:#0B1114;padding:14px 18px;display:flex;align-items:center;justify-content:space-between">
+    <a href="ClearImage Landing Mobile.dc.html" style="display:flex;align-items:center;gap:8px;color:#fff">
+      <svg width="18" height="18" viewBox="0 0 32 32"><path d="M4 12V6a2 2 0 0 1 2-2h6" stroke="#fff" stroke-width="2.5" fill="none" stroke-linecap="round"/><path d="M28 12V6a2 2 0 0 0-2-2h-6" stroke="#fff" stroke-width="2.5" fill="none" stroke-linecap="round"/><path d="M4 20v6a2 2 0 0 0 2 2h6" stroke="#fff" stroke-width="2.5" fill="none" stroke-linecap="round"/><path d="M28 20v6a2 2 0 0 1-2 2h-6" stroke="#fff" stroke-width="2.5" fill="none" stroke-linecap="round"/><circle cx="19" cy="13" r="3" fill="#00A6A6"/></svg>
+      <span style="font-family:'Manrope',sans-serif;font-weight:700;font-size:14px">ClearImage</span>
+    </a>
+    <span class="mono" style="font-size:11px;color:#00A6A6;letter-spacing:0.05em">02/04 · INSPECT</span>
+  </header>
+
+  <main style="flex:1;padding:24px 18px 40px">
+    <div style="border-radius:8px;overflow:hidden;background:#11191D;aspect-ratio:4/3;margin-bottom:20px">
+      <img src="{{ previewUrl }}" style="width:100%;height:100%;object-fit:contain;display:{{ imgDisplay }}"/>
+    </div>
+    <div class="mono" style="font-size:11px;color:#657074;letter-spacing:0.05em;margin-bottom:4px">{{ fileName }}</div>
+    <h1 style="font-family:'Manrope',sans-serif;font-weight:800;font-size:24px;letter-spacing:-0.01em;margin:0 0 20px">Analysis</h1>
+
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:32px">
+      <div><div class="mono" style="font-size:10.5px;color:#657074;margin-bottom:3px">RESOLUTION</div><div style="font-weight:700;font-size:15px">{{ resolution }}</div></div>
+      <div><div class="mono" style="font-size:10.5px;color:#657074;margin-bottom:3px">FORMAT</div><div style="font-weight:700;font-size:15px">{{ fileType }}</div></div>
+      <div><div class="mono" style="font-size:10.5px;color:#657074;margin-bottom:3px">FILE SIZE</div><div style="font-weight:700;font-size:15px">{{ fileSize }}</div></div>
+      <div><div class="mono" style="font-size:10.5px;color:#657074;margin-bottom:3px">STATUS</div><div style="font-weight:700;font-size:15px;color:#2E8B68">Ready</div></div>
+    </div>
+
+    <div class="mono" style="font-size:12px;color:#657074;letter-spacing:0.06em;margin-bottom:12px">PRIMARY FINDINGS</div>
+    <sc-for list="{{ primary }}" as="f" hint-placeholder-count="3">
+      <div style="padding:14px 0;border-bottom:1px solid #D9E4E1">
+        <div style="font-weight:600;font-size:14.5px;margin-bottom:3px">{{ f.title }}</div>
+        <div style="font-size:13px;color:#657074;margin-bottom:6px">{{ f.detail }}</div>
+        <div style="display:flex;align-items:center;gap:7px">
+          <span style="width:6px;height:6px;border-radius:50%;background:{{ f.dot }}"></span>
+          <span class="mono" style="font-size:11.5px;color:#657074">{{ f.status }}</span>
+        </div>
+      </div>
+    </sc-for>
+
+    <div class="mono" style="font-size:12px;color:#657074;letter-spacing:0.06em;margin:28px 0 12px">SECONDARY FINDINGS</div>
+    <sc-for list="{{ secondary }}" as="f" hint-placeholder-count="2">
+      <div style="display:flex;justify-content:space-between;align-items:center;padding:12px 0;border-bottom:1px solid #D9E4E1">
+        <span style="font-size:13.5px;color:#657074">{{ f.title }}</span>
+        <span class="mono" style="font-size:11px;color:#657074">{{ f.status }}</span>
+      </div>
+    </sc-for>
+
+    <div style="margin-top:28px;display:flex;flex-direction:column;gap:10px">
+      <a href="ClearImage Cleanup Mobile.dc.html" style="text-align:center;background:#00A6A6;color:#fff;font-weight:700;font-size:15px;padding:15px;border-radius:6px">Continue to Cleanup</a>
+      <a href="ClearImage Provenance Mobile.dc.html" style="text-align:center;border:1px solid #D9E4E1;color:#0B1114;font-weight:700;font-size:14px;padding:14px;border-radius:6px">Full Report</a>
+    </div>
+  </main>
+</div>
+
+</x-dc>
+<script type="text/x-dc" data-dc-script>
+
+class Component extends DCLogic {
+  state = { data: null };
+  componentDidMount() {
+    try { const raw = sessionStorage.getItem('clearimage_image'); if (raw) this.setState({ data: JSON.parse(raw) }); } catch (e) {}
+  }
+  renderVals() {
+    const d = this.state.data;
+    const primary = [
+      { title: 'Metadata', detail: 'Embedded EXIF data found, including camera and date fields.', status: 'Available', dot: '#2E8B68' },
+      { title: 'Content Credentials (C2PA)', detail: 'No manifest found attached to this file.', status: 'Unavailable', dot: '#657074' },
+      { title: 'Visible mark detection', detail: 'A possible watermark was found in the lower-right region.', status: 'Needs review', dot: '#C58A27' },
+    ];
+    const secondary = [
+      { title: 'Compression anomalies', status: 'Not detected' },
+      { title: 'Format integrity', status: 'Normal' },
+    ];
+    return {
+      primary, secondary,
+      previewUrl: d ? d.dataUrl : '', imgDisplay: d ? 'block' : 'none',
+      fileName: d ? d.name : 'your-image.jpg', resolution: d ? d.resolution : '3840 × 2160',
+      fileSize: d ? d.size : '4.2 MB', fileType: d ? d.type.replace('image/', '').toUpperCase() : 'JPEG',
+    };
+  }
+}
+
+</script>
+</body>
+</html>

@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@600;700;800&family=IBM+Plex+Mono:wght@400;500&family=Public+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  body{margin:0;background:#F3F7F6;color:#0B1114;font-family:'Public Sans',sans-serif;-webkit-font-smoothing:antialiased}
+  *{box-sizing:border-box}
+  .mono{font-family:'IBM Plex Mono',monospace}
+  input[type=file]{display:none}
+  @keyframes spin{to{transform:rotate(360deg)}}
+</style>
+</helmet>
+<div style="max-width:440px;margin:0 auto;min-height:100vh;background:#F3F7F6;display:flex;flex-direction:column">
+
+  <header style="background:#0B1114;padding:14px 18px;display:flex;align-items:center;justify-content:space-between">
+    <a href="ClearImage Landing Mobile.dc.html" style="display:flex;align-items:center;gap:8px;color:#fff">
+      <svg width="18" height="18" viewBox="0 0 32 32"><path d="M4 12V6a2 2 0 0 1 2-2h6" stroke="#fff" stroke-width="2.5" fill="none" stroke-linecap="round"/><path d="M28 12V6a2 2 0 0 0-2-2h-6" stroke="#fff" stroke-width="2.5" fill="none" stroke-linecap="round"/><path d="M4 20v6a2 2 0 0 0 2 2h6" stroke="#fff" stroke-width="2.5" fill="none" stroke-linecap="round"/><path d="M28 20v6a2 2 0 0 1-2 2h-6" stroke="#fff" stroke-width="2.5" fill="none" stroke-linecap="round"/><circle cx="19" cy="13" r="3" fill="#00A6A6"/></svg>
+      <span style="font-family:'Manrope',sans-serif;font-weight:700;font-size:14px">ClearImage</span>
+    </a>
+    <span class="mono" style="font-size:11px;color:#00A6A6;letter-spacing:0.05em">01/04 · UPLOAD</span>
+  </header>
+
+  <main style="flex:1;padding:32px 18px 40px;display:flex;flex-direction:column;align-items:center">
+    <h1 style="font-family:'Manrope',sans-serif;font-weight:800;font-size:24px;letter-spacing:-0.01em;margin:0 0 8px;text-align:center">Upload an image</h1>
+    <p style="font-size:14px;color:#657074;margin:0 0 28px;text-align:center">Format, metadata, and visible marks will be inspected.</p>
+
+    <sc-if value="{{ showDropzone }}" hint-placeholder-val="{{ true }}">
+      <div style="{{ dropzoneStyle }}">
+        <div style="position:absolute;top:14px;left:14px;width:18px;height:18px;border-top:1.5px solid #00A6A6;border-left:1.5px solid #00A6A6"></div>
+        <div style="position:absolute;top:14px;right:14px;width:18px;height:18px;border-top:1.5px solid #00A6A6;border-right:1.5px solid #00A6A6"></div>
+        <div style="position:absolute;bottom:14px;left:14px;width:18px;height:18px;border-bottom:1.5px solid #00A6A6;border-left:1.5px solid #00A6A6"></div>
+        <div style="position:absolute;bottom:14px;right:14px;width:18px;height:18px;border-bottom:1.5px solid #00A6A6;border-right:1.5px solid #00A6A6"></div>
+        <div style="font-family:'Manrope',sans-serif;font-weight:700;font-size:18px;margin-bottom:6px">Drop your image here</div>
+        <div style="font-size:13.5px;color:#657074">Drag not required on mobile</div>
+      </div>
+      <input ref="{{ fileInputRef }}" type="file" accept=".jpg,.jpeg,.png,.webp,image/jpeg,image/png,image/webp" onChange="{{ onFileChange }}"/>
+      <button onClick="{{ openPicker }}" style="width:100%;margin-top:16px;background:#00A6A6;color:#fff;font-weight:700;font-size:16px;padding:16px;border-radius:6px;border:none;cursor:pointer;font-family:inherit">Choose a file</button>
+      <sc-if value="{{ error }}">
+        <div style="margin-top:16px;width:100%;background:#FBEDED;border-left:2px solid #C95858;border-radius:4px;padding:14px 16px">
+          <div style="font-size:13px;color:#8B3A3A;line-height:1.5">{{ error }}</div>
+        </div>
+      </sc-if>
+      <div class="mono" style="display:flex;flex-wrap:wrap;gap:10px 20px;margin-top:28px;font-size:11px;color:#657074;letter-spacing:0.04em;justify-content:center">
+        <span>JPG · PNG · WEBP</span><span>UP TO 25 MB</span><span>PROCESSED, THEN DELETED</span>
+      </div>
+    </sc-if>
+
+    <sc-if value="{{ showUploading }}">
+      <div style="width:100%;border-radius:8px;padding:70px 24px;text-align:center;background:#11191D">
+        <div style="width:26px;height:26px;border:2.5px solid #22232A;border-top-color:#00A6A6;border-radius:50%;margin:0 auto 14px;animation:spin 0.8s linear infinite"></div>
+        <div class="mono" style="font-weight:500;font-size:12.5px;color:#C7C8CC">UPLOADING…</div>
+      </div>
+    </sc-if>
+
+    <sc-if value="{{ showPreview }}">
+      <div style="width:100%;background:#11191D;border-radius:8px;padding:18px">
+        <div style="border-radius:6px;overflow:hidden;background:#0B1114;aspect-ratio:4/3;margin-bottom:16px">
+          <img src="{{ previewUrl }}" style="width:100%;height:100%;object-fit:contain;display:block"/>
+        </div>
+        <div style="font-weight:600;font-size:14.5px;color:#fff;word-break:break-word;margin-bottom:8px">{{ fileName }}</div>
+        <div class="mono" style="display:flex;flex-wrap:wrap;gap:6px 18px;font-size:11.5px;color:#657074;margin-bottom:20px">
+          <span>{{ fileType }}</span><span>{{ fileSize }}</span><span>{{ resolution }}</span>
+        </div>
+        <button onClick="{{ analyze }}" style="width:100%;background:#00A6A6;color:#fff;font-weight:700;font-size:15px;padding:15px;border-radius:6px;cursor:pointer;border:none;font-family:inherit;margin-bottom:10px">Analyze Image</button>
+        <button onClick="{{ resetUpload }}" style="width:100%;background:none;border:1px solid #22232A;color:#C7C8CC;font-weight:600;font-size:14px;padding:14px;border-radius:6px;cursor:pointer;font-family:inherit">Choose different file</button>
+      </div>
+    </sc-if>
+  </main>
+</div>
+
+</x-dc>
+<script type="text/x-dc" data-dc-script>
+
+class Component extends DCLogic {
+  state = { phase: 'idle', error: null, previewUrl: null, fileName: '', fileType: '', fileSize: '', resolution: '' };
+  fileInputRef = React.createRef();
+  openPicker = () => this.fileInputRef.current && this.fileInputRef.current.click();
+  formatSize(bytes) {
+    if (bytes < 1024) return bytes + ' B';
+    if (bytes < 1024 * 1024) return (bytes / 1024).toFixed(1) + ' KB';
+    return (bytes / (1024 * 1024)).toFixed(2) + ' MB';
+  }
+  handleFile(file) {
+    if (!file) return;
+    const validTypes = ['image/jpeg', 'image/png', 'image/webp'];
+    if (!validTypes.includes(file.type)) { this.setState({ error: 'Unsupported format. Please upload a JPG, PNG, or WebP image.' }); return; }
+    if (file.size > 25 * 1024 * 1024) { this.setState({ error: 'File too large. Maximum size is 25 MB.' }); return; }
+    this.setState({ error: null, phase: 'uploading' });
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      const dataUrl = e.target.result;
+      const img = new Image();
+      img.onload = () => {
+        setTimeout(() => {
+          this.setState({ phase: 'preview', previewUrl: dataUrl, fileName: file.name, fileType: file.type.replace('image/', '').toUpperCase(), fileSize: this.formatSize(file.size), resolution: img.naturalWidth + ' × ' + img.naturalHeight });
+          try { sessionStorage.setItem('clearimage_image', JSON.stringify({ dataUrl, name: file.name, type: file.type, size: this.formatSize(file.size), resolution: img.naturalWidth + ' × ' + img.naturalHeight })); } catch (err) {}
+        }, 700);
+      };
+      img.onerror = () => this.setState({ error: 'Invalid image. The file could not be read.', phase: 'idle' });
+      img.src = dataUrl;
+    };
+    reader.onerror = () => this.setState({ error: 'Invalid image. The file could not be read.', phase: 'idle' });
+    reader.readAsDataURL(file);
+  }
+  onFileChange = (e) => this.handleFile(e.target.files[0]);
+  resetUpload = () => this.setState({ phase: 'idle', previewUrl: null, error: null });
+  analyze = () => { window.location.href = 'ClearImage Analysis Mobile.dc.html'; };
+  renderVals() {
+    const { phase, error } = this.state;
+    return {
+      showDropzone: phase === 'idle', showUploading: phase === 'uploading', showPreview: phase === 'preview', error,
+      dropzoneStyle: 'position:relative;width:100%;border-radius:8px;padding:60px 20px;text-align:center;background:#F3F7F6;border:1px solid #D9E4E1',
+      fileInputRef: this.fileInputRef, openPicker: this.openPicker, onFileChange: this.onFileChange,
+      resetUpload: this.resetUpload, analyze: this.analyze,
+      previewUrl: this.state.previewUrl, fileName: this.state.fileName, fileType: this.state.fileType, fileSize: this.state.fileSize, resolution: this.state.resolution,
+    };
+  }
+}
+
+</script>
+</body>
+</html>

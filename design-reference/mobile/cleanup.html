@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@600;700;800&family=IBM+Plex+Mono:wght@400;500&family=Public+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  body{margin:0;background:#0B1114;color:#F0F0F2;font-family:'Public Sans',sans-serif;-webkit-font-smoothing:antialiased}
+  *{box-sizing:border-box}
+  .mono{font-family:'IBM Plex Mono',monospace}
+  @keyframes spin{to{transform:rotate(360deg)}}
+  .opscroll::-webkit-scrollbar{display:none}
+</style>
+</helmet>
+<div style="max-width:440px;margin:0 auto;min-height:100vh;background:#0B1114;display:flex;flex-direction:column">
+  <header style="background:#0B1114;border-bottom:1px solid #22232A;padding:14px 18px;display:flex;align-items:center;justify-content:space-between">
+    <a href="ClearImage Landing Mobile.dc.html" style="display:flex;align-items:center;gap:8px;color:#fff;text-decoration:none">
+      <svg width="18" height="18" viewBox="0 0 32 32"><path d="M4 12V6a2 2 0 0 1 2-2h6" stroke="#fff" stroke-width="2.5" fill="none" stroke-linecap="round"/><path d="M28 12V6a2 2 0 0 0-2-2h-6" stroke="#fff" stroke-width="2.5" fill="none" stroke-linecap="round"/><path d="M4 20v6a2 2 0 0 0 2 2h6" stroke="#fff" stroke-width="2.5" fill="none" stroke-linecap="round"/><path d="M28 20v6a2 2 0 0 1-2 2h-6" stroke="#fff" stroke-width="2.5" fill="none" stroke-linecap="round"/><circle cx="19" cy="13" r="3" fill="#00A6A6"/></svg>
+      <span style="font-family:'Manrope',sans-serif;font-weight:700;font-size:14px">ClearImage</span>
+    </a>
+    <span class="mono" style="font-size:11px;color:#00A6A6;letter-spacing:0.05em">03/04 · CLEAN</span>
+  </header>
+
+  <div style="display:flex;justify-content:center;gap:6px;padding:10px 18px;border-bottom:1px solid #22232A">
+    <button onClick="{{ zoomOut }}" style="width:34px;height:34px;border-radius:6px;border:1px solid #22232A;background:none;color:#C7C8CC;font-size:16px">−</button>
+    <button onClick="{{ zoomIn }}" style="width:34px;height:34px;border-radius:6px;border:1px solid #22232A;background:none;color:#C7C8CC;font-size:16px">+</button>
+    <button onClick="{{ fitScreen }}" style="height:34px;padding:0 12px;border-radius:6px;border:1px solid #22232A;background:none;color:#C7C8CC;font-size:11px" class="mono">FIT</button>
+    <button onClick="{{ resetView }}" style="height:34px;padding:0 12px;border-radius:6px;border:1px solid #22232A;background:none;color:#C7C8CC;font-size:11px" class="mono">RESET</button>
+  </div>
+
+  <div ref="{{ stageRef }}" onTouchMove="{{ onTouchMove }}" onTouchEnd="{{ endDrag }}" onMouseMove="{{ onMove }}" onMouseUp="{{ endDrag }}" style="position:relative;flex:1;margin:16px;border-radius:8px;overflow:hidden;background:#11191D;min-height:340px">
+    <img src="{{ imgUrl }}" style="position:absolute;inset:0;width:100%;height:100%;object-fit:contain;transform:scale({{ zoom }});display:{{ imgDisplay }}"/>
+    <div style="position:absolute;inset:0;background:#1B1C22;display:{{ placeholderDisplay }};align-items:center;justify-content:center;color:#4F5A5D;font-size:12px;text-align:center;padding:20px" class="mono">NO IMAGE — UPLOAD ONE FIRST</div>
+    <sc-if value="{{ processed }}">
+      <div style="position:absolute;inset:0;clip-path:inset(0 {{ clipRight }}% 0 0);background:rgba(0,166,166,0.04)"></div>
+      <div onMouseDown="{{ startDrag }}" onTouchStart="{{ startDrag }}" style="position:absolute;top:0;bottom:0;left:{{ sliderPos }}%;width:0">
+        <div style="position:absolute;top:0;bottom:0;left:-0.5px;width:1px;background:#fff"></div>
+        <div style="position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);width:44px;height:44px;border-radius:50%;background:#fff;display:flex;align-items:center;justify-content:center;font-size:15px;color:#00A6A6;font-weight:700">⟷</div>
+      </div>
+      <div class="mono" style="position:absolute;top:12px;left:12px;font-size:10px;color:#657074;background:rgba(11,17,20,0.7);padding:4px 8px;border-radius:4px">ORIGINAL</div>
+      <div class="mono" style="position:absolute;top:12px;right:12px;font-size:10px;color:#00A6A6;background:rgba(11,17,20,0.7);padding:4px 8px;border-radius:4px">CLEANED</div>
+    </sc-if>
+    <sc-if value="{{ processing }}">
+      <div style="position:absolute;inset:0;background:rgba(11,17,20,0.85);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:12px">
+        <div style="width:26px;height:26px;border:2.5px solid #22232A;border-top-color:#00A6A6;border-radius:50%;animation:spin 0.8s linear infinite"></div>
+        <div class="mono" style="font-size:11.5px;color:#C7C8CC">PROCESSING…</div>
+      </div>
+    </sc-if>
+  </div>
+
+  <div style="padding:0 18px 12px">
+    <div class="opscroll" style="display:flex;gap:8px;overflow-x:auto;padding-bottom:10px">
+      <sc-for list="{{ ops }}" as="op" hint-placeholder-count="4">
+        <button onClick="{{ op.select }}" style="{{ op.style }}">{{ op.title }}</button>
+      </sc-for>
+    </div>
+    <button onClick="{{ toggleAdvanced }}" style="background:none;border:none;color:#657074;font-size:12px;font-weight:600;padding:6px 0;font-family:inherit;display:flex;align-items:center;gap:6px">
+      Advanced <span class="mono">{{ advancedSign }}</span>
+    </button>
+    <sc-if value="{{ advancedOpen }}">
+      <div style="padding:8px 0 4px;display:flex;flex-direction:column;gap:14px">
+        <div><div style="display:flex;justify-content:space-between;font-size:12px;color:#657074;margin-bottom:6px"><span>Strength</span><span class="mono">{{ strength }}%</span></div><input type="range" min="0" max="100" value="{{ strength }}" onChange="{{ onStrength }}" style="width:100%;accent-color:#00A6A6"/></div>
+        <div><div style="display:flex;justify-content:space-between;font-size:12px;color:#657074;margin-bottom:6px"><span>Edge preservation</span><span class="mono">{{ edge }}%</span></div><input type="range" min="0" max="100" value="{{ edge }}" onChange="{{ onEdge }}" style="width:100%;accent-color:#00A6A6"/></div>
+      </div>
+    </sc-if>
+  </div>
+
+  <div style="padding:0 18px 24px;display:flex;flex-direction:column;gap:10px">
+    <button onClick="{{ process }}" disabled="{{ processing }}" style="background:#00A6A6;color:#fff;font-weight:700;font-size:15px;padding:15px;border-radius:6px;border:none;font-family:inherit;opacity:{{ processBtnOpacity }}">{{ processLabel }}</button>
+    <sc-if value="{{ processed }}">
+      <a href="ClearImage Download Mobile.dc.html" style="text-align:center;background:none;border:1px solid #22232A;color:#F0F0F2;font-weight:700;font-size:14px;padding:14px;border-radius:6px;text-decoration:none">Download Result</a>
+    </sc-if>
+  </div>
+</div>
+
+</x-dc>
+<script type="text/x-dc" data-dc-script>
+
+class Component extends DCLogic {
+  state = { data: null, selectedOp: 0, processing: false, processed: false, zoom: 1, sliderPos: 50, dragging: false, advancedOpen: false, strength: 70, edge: 60 };
+  stageRef = React.createRef();
+  componentDidMount() {
+    try { const raw = sessionStorage.getItem('clearimage_image'); if (raw) this.setState({ data: JSON.parse(raw) }); } catch (e) {}
+  }
+  process = () => {
+    if (this.state.processing) return;
+    this.setState({ processing: true, processed: false });
+    setTimeout(() => this.setState({ processing: false, processed: true, sliderPos: 50 }), 1400);
+  };
+  zoomIn = () => this.setState(s => ({ zoom: Math.min(2.5, s.zoom + 0.25) }));
+  zoomOut = () => this.setState(s => ({ zoom: Math.max(0.5, s.zoom - 0.25) }));
+  fitScreen = () => this.setState({ zoom: 1 });
+  resetView = () => this.setState({ zoom: 1, sliderPos: 50 });
+  toggleAdvanced = () => this.setState(s => ({ advancedOpen: !s.advancedOpen }));
+  onStrength = (e) => this.setState({ strength: e.target.value });
+  onEdge = (e) => this.setState({ edge: e.target.value });
+  startDrag = (e) => { e.preventDefault(); this.setState({ dragging: true }); };
+  endDrag = () => this.setState({ dragging: false });
+  posFromEvent(e) {
+    const rect = this.stageRef.current.getBoundingClientRect();
+    const x = e.touches ? e.touches[0].clientX : e.clientX;
+    return Math.max(0, Math.min(100, ((x - rect.left) / rect.width) * 100));
+  }
+  onMove = (e) => { if (!this.state.dragging || !this.stageRef.current) return; this.setState({ sliderPos: this.posFromEvent(e) }); };
+  onTouchMove = (e) => { if (!this.state.dragging || !this.stageRef.current) return; this.setState({ sliderPos: this.posFromEvent(e) }); };
+  renderVals() {
+    const opNames = ['Remove watermark', 'Remove text overlay', 'Remove logo / stamp', 'Reduce artifacts'];
+    const ops = opNames.map((title, i) => ({
+      title, select: () => this.setState({ selectedOp: i }),
+      style: `flex:none;white-space:nowrap;padding:10px 14px;border-radius:6px;cursor:pointer;font-family:inherit;font-size:13px;font-weight:600;border:none;background:${this.state.selectedOp === i ? '#0F2626' : '#151B1F'};color:${this.state.selectedOp === i ? '#6FD6D1' : '#C7C8CC'}`,
+    }));
+    const d = this.state.data;
+    return {
+      ops, advancedOpen: this.state.advancedOpen, advancedSign: this.state.advancedOpen ? '−' : '+', toggleAdvanced: this.toggleAdvanced,
+      strength: this.state.strength, edge: this.state.edge, onStrength: this.onStrength, onEdge: this.onEdge,
+      processing: this.state.processing, processed: this.state.processed,
+      processBtnOpacity: this.state.processing ? 0.6 : 1,
+      processLabel: this.state.processing ? 'Processing…' : (this.state.processed ? 'Re-run Cleanup' : 'Process Image'),
+      process: this.process, zoomIn: this.zoomIn, zoomOut: this.zoomOut, fitScreen: this.fitScreen, resetView: this.resetView,
+      zoom: this.state.zoom, stageRef: this.stageRef,
+      imgUrl: d ? d.dataUrl : '', imgDisplay: d ? 'block' : 'none', placeholderDisplay: d ? 'none' : 'flex',
+      sliderPos: this.state.sliderPos, clipRight: 100 - this.state.sliderPos,
+      startDrag: this.startDrag, endDrag: this.endDrag, onMove: this.onMove, onTouchMove: this.onTouchMove,
+    };
+  }
+}
+
+</script>
+</body>
+</html>
