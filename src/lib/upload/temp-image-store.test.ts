@@ -1,5 +1,6 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import type * as TempImageStoreModule from "@/lib/upload/temp-image-store";
+import type * as CleanupResultStoreModule from "@/lib/cleanup/cleanup-result-store";
 
 function makeRecord(previewUrl: string) {
   return {
@@ -15,6 +16,8 @@ describe("temp-image-store", () => {
   let deleteTempImage: typeof TempImageStoreModule.deleteTempImage;
   let getTempImage: typeof TempImageStoreModule.getTempImage;
   let saveTempImage: typeof TempImageStoreModule.saveTempImage;
+  let saveCleanupResult: typeof CleanupResultStoreModule.saveCleanupResult;
+  let getCleanupResult: typeof CleanupResultStoreModule.getCleanupResult;
 
   // The store keeps module-level state (the map, plus the "current active
   // id"). Re-importing fresh for every test — rather than reusing one
@@ -27,6 +30,8 @@ describe("temp-image-store", () => {
     vi.resetModules();
     ({ createTempImageId, deleteTempImage, getTempImage, saveTempImage } =
       await import("@/lib/upload/temp-image-store"));
+    ({ saveCleanupResult, getCleanupResult } =
+      await import("@/lib/cleanup/cleanup-result-store"));
 
     revokeObjectURL = vi.fn();
     vi.stubGlobal("URL", { ...URL, revokeObjectURL });
@@ -101,5 +106,22 @@ describe("temp-image-store", () => {
     saveTempImage(id, makeRecord("blob:same"));
 
     expect(revokeObjectURL).not.toHaveBeenCalled();
+  });
+
+  it("deleteTempImage cascades to any Cleanup result for the same id, so it never outlives its source", () => {
+    const id = createTempImageId();
+    saveTempImage(id, makeRecord("blob:source"));
+    saveCleanupResult(id, {
+      blob: new Blob(["x"], { type: "image/png" }),
+      url: "blob:cleaned-result",
+      width: 100,
+      height: 100,
+      operationId: "blur-region",
+    });
+
+    deleteTempImage(id);
+
+    expect(revokeObjectURL).toHaveBeenCalledWith("blob:cleaned-result");
+    expect(getCleanupResult(id)).toBeUndefined();
   });
 });

@@ -15,6 +15,10 @@ import {
   DEFAULT_CLEANUP_OPERATION_ID,
 } from "@/lib/cleanup/operations";
 import {
+  deleteCleanupResult,
+  saveCleanupResult,
+} from "@/lib/cleanup/cleanup-result-store";
+import {
   loadImageElement,
   runCleanupOperation,
 } from "@/lib/cleanup/canvas-processor";
@@ -76,11 +80,23 @@ export function CleanupView({ id }: CleanupViewProps) {
 
   const cleanupState: CleanupState = phase ?? (region ? "ready" : "loaded");
 
+  // The store (not this component) owns object-URL revocation for the
+  // result — it's the same in-memory hand-off Export reads from, keyed by
+  // this same id, so it must stay the single source of truth for when a
+  // processed result's URL is still valid.
   function replaceResult(next: CleanupResult | null) {
-    setResult((prev) => {
-      if (prev) URL.revokeObjectURL(prev.url);
-      return next;
-    });
+    setResult(next);
+    if (next) {
+      saveCleanupResult(id, {
+        blob: next.blob,
+        url: next.url,
+        width: next.width,
+        height: next.height,
+        operationId: selectedOperationId,
+      });
+    } else {
+      deleteCleanupResult(id);
+    }
   }
 
   function handleRegionChange(next: CleanupRegion) {
@@ -107,6 +123,7 @@ export function CleanupView({ id }: CleanupViewProps) {
         image,
         region,
         selectedOperationId,
+        record.file.type,
         { blurStrength },
       );
       replaceResult(nextResult);

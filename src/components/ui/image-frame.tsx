@@ -6,8 +6,8 @@ interface ImageFrameProps {
   alt?: string;
   children?: ReactNode;
   className?: string;
-  /** "square" (default, matches the Cleanup placeholder) or "4/3" (Inspect/Analysis). */
-  aspectRatio?: "square" | "4/3";
+  /** "square" (default, matches the Cleanup placeholder), "4/3" (Inspect/Analysis), or "16/10" (Export desktop). */
+  aspectRatio?: "square" | "4/3" | "16/10";
   /** "light" (default) for a bordered light frame, "dark" for the workspace panel used once a real image is shown. */
   tone?: "light" | "dark";
 }
@@ -15,6 +15,7 @@ interface ImageFrameProps {
 const aspectClass = {
   square: "aspect-square",
   "4/3": "aspect-[4/3]",
+  "16/10": "aspect-[16/10]",
 };
 
 const toneClass = {

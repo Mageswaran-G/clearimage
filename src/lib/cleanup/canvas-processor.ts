@@ -9,6 +9,13 @@ import {
 
 export const DEFAULT_CLEANUP_OPTIONS: CleanupOptions = { blurStrength: 16 };
 
+// Quality used when re-encoding to a lossy format (JPEG/WebP). PNG ignores
+// this — it's always lossless. Canvas.toBlob() defaults to PNG when no
+// type is given at all, which would silently convert every JPEG/WebP
+// upload to PNG on output; passing the source's own MIME type here keeps
+// the output format matching the input instead.
+const LOSSY_EXPORT_QUALITY = 0.92;
+
 /** Loads a URL (an object URL from the temp store, in practice) into a
  * real, decoded `<img>` element so Canvas can draw from it. */
 export function loadImageElement(url: string): Promise<HTMLImageElement> {
@@ -37,18 +44,26 @@ function get2dContext(canvas: HTMLCanvasElement): CanvasRenderingContext2D {
   return ctx;
 }
 
-function canvasToBlob(canvas: HTMLCanvasElement): Promise<Blob> {
+function canvasToBlob(
+  canvas: HTMLCanvasElement,
+  mimeType: string,
+): Promise<Blob> {
   return new Promise((resolve, reject) => {
-    canvas.toBlob((blob) => {
-      if (blob) resolve(blob);
-      else
-        reject(
-          new CleanupProcessingError(
-            "processing-failed",
-            "Could not encode the processed image.",
-          ),
-        );
-    });
+    const quality = mimeType === "image/png" ? undefined : LOSSY_EXPORT_QUALITY;
+    canvas.toBlob(
+      (blob) => {
+        if (blob) resolve(blob);
+        else
+          reject(
+            new CleanupProcessingError(
+              "processing-failed",
+              "Could not encode the processed image.",
+            ),
+          );
+      },
+      mimeType,
+      quality,
+    );
   });
 }
 
@@ -76,6 +91,7 @@ async function blurRegion(
   source: HTMLImageElement,
   region: CleanupRegion,
   blurStrength: number,
+  outputMimeType: string,
 ): Promise<CleanupResult> {
   const width = source.naturalWidth;
   const height = source.naturalHeight;
@@ -95,7 +111,7 @@ async function blurRegion(
   ctx.drawImage(source, 0, 0, width, height);
   ctx.restore();
 
-  const blob = await canvasToBlob(canvas);
+  const blob = await canvasToBlob(canvas, outputMimeType);
   return { blob, url: URL.createObjectURL(blob), width, height };
 }
 
@@ -107,6 +123,7 @@ async function blurRegion(
 async function cropToRegion(
   source: HTMLImageElement,
   region: CleanupRegion,
+  outputMimeType: string,
 ): Promise<CleanupResult> {
   const sourceWidth = source.naturalWidth;
   const sourceHeight = source.naturalHeight;
@@ -128,7 +145,7 @@ async function cropToRegion(
     rect.height,
   );
 
-  const blob = await canvasToBlob(canvas);
+  const blob = await canvasToBlob(canvas, outputMimeType);
   return {
     blob,
     url: URL.createObjectURL(blob),
@@ -144,11 +161,18 @@ async function cropToRegion(
  * Any operation id besides the two real ones throws rather than faking a
  * result — there is no path here that returns success without a genuine
  * Canvas operation having run.
+ *
+ * `sourceMimeType` (the original upload's real MIME type, from Upload's
+ * signature-validated file) is passed straight through to `canvas.toBlob`,
+ * so a JPEG stays a JPEG and a WebP stays a WebP — `toBlob` silently
+ * defaults to PNG when given no type, which would otherwise convert every
+ * non-PNG upload to PNG on output without anyone asking for that.
  */
 export async function runCleanupOperation(
   source: HTMLImageElement,
   region: CleanupRegion,
   operationId: CleanupOperationId,
+  sourceMimeType: string,
   options: CleanupOptions = DEFAULT_CLEANUP_OPTIONS,
 ): Promise<CleanupResult> {
   if (!isValidRegion(region)) {
@@ -167,9 +191,9 @@ export async function runCleanupOperation(
 
   switch (operationId) {
     case "blur-region":
-      return blurRegion(source, region, options.blurStrength);
+      return blurRegion(source, region, options.blurStrength, sourceMimeType);
     case "crop-region":
-      return cropToRegion(source, region);
+      return cropToRegion(source, region, sourceMimeType);
     default:
       throw new CleanupProcessingError(
         "unavailable-operation",

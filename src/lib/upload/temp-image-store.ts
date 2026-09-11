@@ -1,4 +1,5 @@
 import type { ImageDimensions } from "@/lib/upload/validate-image";
+import { deleteCleanupResult } from "@/lib/cleanup/cleanup-result-store";
 
 export interface TempImageRecord {
   file: File;
@@ -60,9 +61,16 @@ export function getTempImage(id: string): TempImageRecord | undefined {
   return store.get(id);
 }
 
+/**
+ * Deletes the source record for an id and cascades to any Cleanup result
+ * still stored for that same id (see cleanup-result-store.ts) — a
+ * processed result must never outlive the source image it was derived
+ * from (e.g. the user abandons this image and uploads a different one).
+ */
 export function deleteTempImage(id: string): void {
   const record = store.get(id);
   if (record) URL.revokeObjectURL(record.previewUrl);
   store.delete(id);
   if (currentId === id) currentId = null;
+  deleteCleanupResult(id);
 }

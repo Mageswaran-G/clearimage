@@ -64,6 +64,7 @@ class FakeImage {
 }
 
 let lastContext: FakeContext2D | null = null;
+let lastToBlobArgs: { mimeType?: string; quality?: number } | null = null;
 let toBlobShouldFail = false;
 
 function stubCanvas() {
@@ -72,11 +73,17 @@ function stubCanvas() {
     return lastContext as unknown as CanvasRenderingContext2D;
   });
   vi.spyOn(HTMLCanvasElement.prototype, "toBlob").mockImplementation(function (
-    this: HTMLCanvasElement,
     callback: BlobCallback,
+    mimeType?: string,
+    quality?: number,
   ) {
+    lastToBlobArgs = { mimeType, quality };
     queueMicrotask(() => {
-      callback(toBlobShouldFail ? null : new Blob(["fake-bytes"]));
+      callback(
+        toBlobShouldFail
+          ? null
+          : new Blob(["fake-bytes"], { type: mimeType ?? "image/png" }),
+      );
     });
   });
 }
@@ -85,6 +92,7 @@ describe("cleanup canvas-processor", () => {
   beforeEach(() => {
     toBlobShouldFail = false;
     lastContext = null;
+    lastToBlobArgs = null;
     vi.stubGlobal("Image", FakeImage);
     vi.stubGlobal("URL", {
       ...URL,
@@ -121,9 +129,13 @@ describe("cleanup canvas-processor", () => {
       const source = await loadFakeSource();
       const region = { x: 0.1, y: 0.2, width: 0.3, height: 0.4 };
 
-      const result = await runCleanupOperation(source, region, "blur-region", {
-        blurStrength: 12,
-      });
+      const result = await runCleanupOperation(
+        source,
+        region,
+        "blur-region",
+        "image/png",
+        { blurStrength: 12 },
+      );
 
       expect(result.url).toBe("blob:result");
       expect(result.width).toBe(1000);
@@ -155,6 +167,7 @@ describe("cleanup canvas-processor", () => {
         source,
         { x: 0, y: 0, width: 0.5, height: 0.5 },
         "blur-region",
+        "image/png",
       );
       expect(result.width).toBe(source.naturalWidth);
       expect(result.height).toBe(source.naturalHeight);
@@ -166,7 +179,12 @@ describe("cleanup canvas-processor", () => {
       const source = await loadFakeSource();
       const region = { x: 0.25, y: 0.4, width: 0.5, height: 0.2 };
 
-      const result = await runCleanupOperation(source, region, "crop-region");
+      const result = await runCleanupOperation(
+        source,
+        region,
+        "crop-region",
+        "image/png",
+      );
 
       expect(result.width).toBe(500); // 0.5 * 1000
       expect(result.height).toBe(100); // 0.2 * 500
@@ -181,6 +199,49 @@ describe("cleanup canvas-processor", () => {
     });
   });
 
+  describe("runCleanupOperation — output format preservation", () => {
+    it("preserves a PNG source as PNG output, with no lossy quality set", async () => {
+      const source = await loadFakeSource();
+      const result = await runCleanupOperation(
+        source,
+        { x: 0.1, y: 0.1, width: 0.3, height: 0.3 },
+        "crop-region",
+        "image/png",
+      );
+      expect(result.blob.type).toBe("image/png");
+      expect(lastToBlobArgs).toEqual({
+        mimeType: "image/png",
+        quality: undefined,
+      });
+    });
+
+    it("preserves a JPEG source as JPEG output, with a lossy quality set", async () => {
+      const source = await loadFakeSource();
+      const result = await runCleanupOperation(
+        source,
+        { x: 0.1, y: 0.1, width: 0.3, height: 0.3 },
+        "crop-region",
+        "image/jpeg",
+      );
+      expect(result.blob.type).toBe("image/jpeg");
+      expect(lastToBlobArgs?.mimeType).toBe("image/jpeg");
+      expect(lastToBlobArgs?.quality).toBeGreaterThan(0);
+      expect(lastToBlobArgs?.quality).toBeLessThanOrEqual(1);
+    });
+
+    it("preserves a WebP source as WebP output", async () => {
+      const source = await loadFakeSource();
+      const result = await runCleanupOperation(
+        source,
+        { x: 0.1, y: 0.1, width: 0.3, height: 0.3 },
+        "blur-region",
+        "image/webp",
+      );
+      expect(result.blob.type).toBe("image/webp");
+      expect(lastToBlobArgs?.mimeType).toBe("image/webp");
+    });
+  });
+
   describe("runCleanupOperation — validation and failure modes", () => {
     it("rejects an invalid (too small) region without touching the canvas", async () => {
       const source = await loadFakeSource();
@@ -189,6 +250,7 @@ describe("cleanup canvas-processor", () => {
           source,
           { x: 0.1, y: 0.1, width: 0.001, height: 0.2 },
           "blur-region",
+          "image/png",
         ),
       ).rejects.toMatchObject({ kind: "invalid-region" });
       expect(lastContext).toBeNull();
@@ -201,6 +263,7 @@ describe("cleanup canvas-processor", () => {
           source,
           { x: 0.1, y: 0.1, width: 0.3, height: 0.3 },
           "remove-watermark",
+          "image/png",
         ),
       ).rejects.toMatchObject({ kind: "unavailable-operation" });
     });
@@ -213,6 +276,7 @@ describe("cleanup canvas-processor", () => {
           source,
           { x: 0.1, y: 0.1, width: 0.3, height: 0.3 },
           "crop-region",
+          "image/png",
         ),
       ).rejects.toMatchObject({ kind: "processing-failed" });
     });
