@@ -18,16 +18,44 @@ interface MobileMenuProps {
 /** Accessible slide-down drawer for the mobile landing header's menu button. */
 export function MobileMenu({ open, onClose }: MobileMenuProps) {
   const firstLinkRef = useRef<HTMLAnchorElement>(null);
+  const dialogRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     if (!open) return;
+    // Restore focus to whatever opened the menu (the header's "Open menu"
+    // button) once it closes, rather than leaving focus stranded.
+    const previouslyFocused = document.activeElement as HTMLElement | null;
     firstLinkRef.current?.focus();
 
     const onKeyDown = (event: KeyboardEvent) => {
-      if (event.key === "Escape") onClose();
+      if (event.key === "Escape") {
+        onClose();
+        return;
+      }
+      if (event.key !== "Tab" || !dialogRef.current) return;
+
+      // Keep keyboard focus inside the open dialog — otherwise Tab would
+      // walk out into the page content hidden behind the backdrop.
+      const focusable = dialogRef.current.querySelectorAll<HTMLElement>(
+        'a[href], button:not([tabindex="-1"])',
+      );
+      if (focusable.length === 0) return;
+      const first = focusable[0];
+      const last = focusable[focusable.length - 1];
+
+      if (event.shiftKey && document.activeElement === first) {
+        event.preventDefault();
+        last.focus();
+      } else if (!event.shiftKey && document.activeElement === last) {
+        event.preventDefault();
+        first.focus();
+      }
     };
     document.addEventListener("keydown", onKeyDown);
-    return () => document.removeEventListener("keydown", onKeyDown);
+    return () => {
+      document.removeEventListener("keydown", onKeyDown);
+      previouslyFocused?.focus();
+    };
   }, [open, onClose]);
 
   if (!open) return null;
@@ -42,6 +70,7 @@ export function MobileMenu({ open, onClose }: MobileMenuProps) {
         className="absolute inset-0 bg-graphite/40"
       />
       <div
+        ref={dialogRef}
         role="dialog"
         aria-modal="true"
         aria-label="Menu"

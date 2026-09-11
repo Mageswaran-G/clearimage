@@ -153,6 +153,11 @@ export function CleanupView({ id }: CleanupViewProps) {
 
   return (
     <div className="mx-auto flex w-full max-w-[1320px] flex-1 flex-col md:flex-row">
+      {/* Every other workflow step has a visible page-level heading; the
+          Cleanup workspace's "CLEANUP" label below is a small section tag,
+          not a real title, so a screen-reader-only h1 keeps the heading
+          hierarchy honest without changing the approved dark editor layout. */}
+      <h1 className="sr-only">Clean up your image</h1>
       <aside className="flex flex-col gap-6 border-b border-[#1E1F26] p-[18px] md:w-[260px] md:border-r md:border-b-0 md:p-7">
         <div>
           <div className="mb-3.5 font-mono text-[11px] tracking-wide text-[#4F5A5D]">
@@ -178,14 +183,14 @@ export function CleanupView({ id }: CleanupViewProps) {
           <button
             type="button"
             onClick={() => setAdvancedOpen((open) => !open)}
-            className="flex items-center gap-1.5 font-sans text-xs font-semibold text-[#657074]"
+            className="flex items-center gap-1.5 font-sans text-xs font-semibold text-text-secondary"
           >
             Advanced{" "}
             <span className="font-mono">{advancedOpen ? "−" : "+"}</span>
           </button>
           {advancedOpen && selectedOperationId === "blur-region" && (
             <div className="mt-4">
-              <div className="mb-2 flex justify-between text-xs text-[#657074]">
+              <div className="mb-2 flex justify-between text-xs text-text-secondary">
                 <span>Blur strength</span>
                 <span className="font-mono">{blurStrength}px</span>
               </div>

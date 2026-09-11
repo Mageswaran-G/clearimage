@@ -208,7 +208,7 @@ export function CleanupCanvas({
       )}
 
       {state === "processing" && (
-        <div className="absolute inset-0 flex flex-col items-center justify-center gap-3.5 bg-[#0B1114]/85">
+        <div className="absolute inset-0 flex flex-col items-center justify-center gap-3.5 bg-graphite/85">
           <div
             aria-hidden="true"
             className="h-7 w-7 animate-spin rounded-full border-[2.5px] border-[#22232A] border-t-teal"
