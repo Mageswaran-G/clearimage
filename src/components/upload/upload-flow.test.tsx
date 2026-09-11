@@ -29,8 +29,13 @@ class FakeImage {
   }
 }
 
+const JPEG_HEADER = new Uint8Array([
+  0xff, 0xd8, 0xff, 0xe0, 0x00, 0x10, 0x4a, 0x46, 0x49, 0x46, 0x00, 0x01,
+]);
+
 function makeFile(name: string, type: string): File {
-  return new File([new Uint8Array(4)], name, { type });
+  const bytes = type === "image/jpeg" ? JPEG_HEADER : new Uint8Array(4);
+  return new File([bytes], name, { type });
 }
 
 describe("UploadFlow", () => {

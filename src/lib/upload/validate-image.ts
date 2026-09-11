@@ -1,11 +1,23 @@
 import {
+  MAX_IMAGE_DIMENSION_PX,
+  MAX_IMAGE_MEGAPIXELS,
+  MAX_IMAGE_PIXELS,
   MAX_UPLOAD_SIZE_BYTES,
   MAX_UPLOAD_SIZE_MB,
   SUPPORTED_MIME_TYPES,
 } from "@/lib/upload/constants";
+import {
+  detectImageSignature,
+  SIGNATURE_HEADER_BYTES,
+  SIGNATURE_MIME_TYPE,
+} from "@/lib/upload/image-signature";
 
 export type ValidationErrorKind =
-  "unsupported-format" | "too-large" | "corrupt" | "unknown";
+  | "unsupported-format"
+  | "too-large"
+  | "dimensions-too-large"
+  | "corrupt"
+  | "unknown";
 
 export interface ValidationError {
   kind: ValidationErrorKind;
@@ -30,6 +42,7 @@ const ERROR_MESSAGES: Record<ValidationErrorKind, string> = {
   "unsupported-format":
     "Unsupported format. Please upload a JPG, PNG, or WebP image.",
   "too-large": `File too large. Maximum size is ${MAX_UPLOAD_SIZE_MB} MB.`,
+  "dimensions-too-large": `Image dimensions too large. Maximum is ${MAX_IMAGE_DIMENSION_PX}px per side, or ${MAX_IMAGE_MEGAPIXELS} megapixels total.`,
   corrupt: "Invalid image. The file could not be read.",
   unknown: "Something went wrong while reading this file. Please try again.",
 };
@@ -39,6 +52,12 @@ function failure(kind: ValidationErrorKind): {
   error: ValidationError;
 } {
   return { ok: false, error: { kind, message: ERROR_MESSAGES[kind] } };
+}
+
+/** Reads just enough of the file's header bytes to identify its real format. */
+async function readSignatureBytes(file: File): Promise<Uint8Array> {
+  const buffer = await file.slice(0, SIGNATURE_HEADER_BYTES).arrayBuffer();
+  return new Uint8Array(buffer);
 }
 
 /** Decodes an object URL to confirm it's a real, readable image and to read its pixel size. */
@@ -55,8 +74,10 @@ function readImageDimensions(objectUrl: string): Promise<ImageDimensions> {
 /**
  * Validates a user-selected file and, on success, produces a temporary
  * object-URL preview plus its pixel dimensions. Runs entirely client-side —
- * no network request. Order matches the approved spec: format, then size,
- * then a real decode (catches corrupt files and reads dimensions together).
+ * no network request. Order matches the approved spec: declared format,
+ * then size, then the file's real signature (never trusting file.type or
+ * the extension alone), then a real decode — which also lets us reject
+ * images whose pixel dimensions exceed the safety limit.
  */
 export async function processSelectedFile(file: File): Promise<ProcessResult> {
   try {
@@ -72,10 +93,30 @@ export async function processSelectedFile(file: File): Promise<ProcessResult> {
       return failure("too-large");
     }
 
+    const headerBytes = await readSignatureBytes(file);
+    if (headerBytes.length < SIGNATURE_HEADER_BYTES) {
+      return failure("corrupt");
+    }
+
+    const signature = detectImageSignature(headerBytes);
+    if (!signature || SIGNATURE_MIME_TYPE[signature] !== file.type) {
+      return failure("unsupported-format");
+    }
+
     const previewUrl = URL.createObjectURL(file);
 
     try {
       const dimensions = await readImageDimensions(previewUrl);
+
+      if (
+        dimensions.width > MAX_IMAGE_DIMENSION_PX ||
+        dimensions.height > MAX_IMAGE_DIMENSION_PX ||
+        dimensions.width * dimensions.height > MAX_IMAGE_PIXELS
+      ) {
+        URL.revokeObjectURL(previewUrl);
+        return failure("dimensions-too-large");
+      }
+
       return { ok: true, value: { file, previewUrl, dimensions } };
     } catch {
       URL.revokeObjectURL(previewUrl);
