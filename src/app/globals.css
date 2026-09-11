@@ -1,0 +1,43 @@
+@import "tailwindcss";
+
+/*
+ * Approved ClearImage design tokens.
+ * Values must match src/lib/design-tokens.ts exactly.
+ * Do not change these without design approval.
+ */
+:root {
+  --color-background: #f3f7f6;
+  --color-graphite: #0b1114;
+  --color-workspace-dark: #11191d;
+  --color-teal: #00a6a6;
+  --color-teal-deep: #087c7c;
+  --color-text-secondary: #657074;
+  --color-border: #d9e4e1;
+  --color-success: #2e8b68;
+  --color-warning: #c58a27;
+  --color-error: #c95858;
+}
+
+@theme inline {
+  --color-background: var(--color-background);
+  --color-foreground: var(--color-graphite);
+
+  --color-graphite: var(--color-graphite);
+  --color-workspace-dark: var(--color-workspace-dark);
+  --color-teal: var(--color-teal);
+  --color-teal-deep: var(--color-teal-deep);
+  --color-text-secondary: var(--color-text-secondary);
+  --color-border: var(--color-border);
+  --color-success: var(--color-success);
+  --color-warning: var(--color-warning);
+  --color-error: var(--color-error);
+
+  --font-sans: var(--font-public-sans);
+  --font-display: var(--font-manrope);
+  --font-mono: var(--font-ibm-plex-mono);
+}
+
+body {
+  background: var(--color-background);
+  color: var(--color-graphite);
+}
