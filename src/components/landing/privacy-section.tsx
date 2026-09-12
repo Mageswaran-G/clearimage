@@ -1,11 +1,11 @@
 const ROWS = [
   {
-    title: "Secure transfer",
-    desc: "Uploads move over an encrypted connection.",
+    title: "Local by default",
+    desc: "Inspection, provenance, blur, and crop all run in your browser. Your image is never uploaded anywhere to use them.",
   },
   {
-    title: "No unnecessary retention",
-    desc: "Files are held only for the duration of processing, then removed.",
+    title: "Cloud steps are temporary",
+    desc: "Optional cloud-based cleanup sends your image for processing only, over an encrypted connection, and doesn't keep a copy afterward.",
   },
   {
     title: "Transparent processing",

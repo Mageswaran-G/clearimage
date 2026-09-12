@@ -27,13 +27,19 @@ export function OperationList({
       {operations.map((op) => {
         const selected = op.id === selectedId;
         const itemDisabled = disabled || !op.available;
+        const title =
+          op.status === "coming-soon"
+            ? "Cloud-based cleanup — coming soon"
+            : op.status === "unavailable"
+              ? "Not available in this version"
+              : undefined;
         return (
           <button
             key={op.id}
             type="button"
             aria-pressed={selected}
             disabled={itemDisabled}
-            title={op.available ? undefined : "Not available yet"}
+            title={title}
             onClick={() => onSelect(op.id)}
             className={`flex-none rounded-md px-3 py-2.5 text-left text-[13.5px] font-semibold whitespace-nowrap transition-colors disabled:cursor-not-allowed disabled:opacity-40 md:w-full md:whitespace-normal ${
               selected
@@ -42,9 +48,14 @@ export function OperationList({
             }`}
           >
             {op.label}
-            {!op.available && (
+            {op.status === "coming-soon" && (
               <span className="ml-1.5 font-mono text-[10px] text-text-secondary">
                 SOON
+              </span>
+            )}
+            {op.status === "unavailable" && (
+              <span className="ml-1.5 font-mono text-[10px] text-text-secondary">
+                N/A
               </span>
             )}
           </button>

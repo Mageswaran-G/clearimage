@@ -25,11 +25,28 @@ export type CleanupOperationId =
   | "remove-logo"
   | "reduce-artifacts";
 
+/**
+ * The real, honest state of one catalog entry:
+ *  - "supported": a genuine processor exists and is reachable right now
+ *    (the two Canvas operations always; a cloud operation only once a real,
+ *    benchmarked CloudCleanupProvider is registered — see
+ *    src/lib/cleanup/cloud/provider-registry.ts).
+ *  - "coming-soon": a real architecture/seam exists for this operation
+ *    (the cloud pipeline), but no approved provider is wired up yet.
+ *  - "unavailable": no implementation and no concrete plan exists at all.
+ */
+export type CleanupOperationStatus =
+  "supported" | "coming-soon" | "unavailable";
+
 export interface CleanupOperation {
   id: CleanupOperationId;
   label: string;
   description: string;
-  /** false = shown in the UI, but disabled — no real processing exists yet. */
+  status: CleanupOperationStatus;
+  /** Derived convenience: true only when status is "supported". Kept
+   * alongside `status` (rather than replaced by it) since existing UI code
+   * already reads a simple boolean to decide whether an operation can be
+   * selected at all. */
   available: boolean;
 }
 
@@ -42,9 +59,23 @@ export interface CleanupOperation {
  * always has an operation pre-selected — so a valid region and "ready to
  * process" are the same real moment, not two distinct states to fake a
  * difference between.
+ *
+ * "uploading" and "retrying" exist for cloud operations specifically: a
+ * browser-side Canvas operation (blur/crop) has no separate upload phase
+ * and nothing to retry against (it either runs or throws immediately), so
+ * those two states are simply never reached by the two operations that are
+ * "supported" today. They exist now so the state machine is genuinely
+ * ready for a cloud operation once one exists, rather than being
+ * retrofitted later.
  */
 export type CleanupState =
-  "loaded" | "ready" | "processing" | "success" | "error";
+  | "loaded"
+  | "ready"
+  | "uploading"
+  | "processing"
+  | "success"
+  | "error"
+  | "retrying";
 
 export interface CleanupOptions {
   /** Blur radius in CSS pixels, applied via the real Canvas 2D `filter`. */
